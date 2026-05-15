@@ -1,0 +1,18 @@
+{
+  "input_image": "results\\scaling_inputs\\red_flower_64.png",
+  "output_image": "results\\red_flower_64_bright.png",
+  "mode": "brightness",
+  "width": 64,
+  "height": 64,
+  "pixels": 4096,
+  "cycles": 2742,
+  "wall_seconds": 8.685524200001964,
+  "data_mem_addr_bits": 16,
+  "data_mem_data_bits": 16,
+  "thread_count_bits": 16,
+  "num_cores": 8,
+  "threads_per_block": 16,
+  "data_mem_channels": 16,
+  "program_mem_channels": 8,
+  "brightness": 48
+}

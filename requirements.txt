@@ -1,0 +1,4 @@
+cocotb==2.0.1
+matplotlib==3.10.7
+Pillow==12.2.0
+pytest==9.0.3
