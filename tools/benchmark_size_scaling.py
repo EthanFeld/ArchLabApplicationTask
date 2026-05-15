@@ -17,14 +17,17 @@ from tools.sim import build_gpu
 
 
 def _mode_tag(mode: str) -> str:
+    """Convert CLI mode name into a filesystem-friendly tag."""
     return mode.replace("-", "_")
 
 
 def _scaling_stem(mode: str) -> str:
+    """Choose output filename stem for scaling artifacts."""
     return "brightness_scaling_extended" if mode == "brightness" else f"{_mode_tag(mode)}_scaling"
 
 
 def _scaling_title(mode: str) -> str:
+    """Choose human-readable plot title for a scaling run."""
     titles = {
         "brightness": "Brightness Scaling",
         "brightness-persistent": "Persistent Brightness Scaling",
@@ -36,6 +39,17 @@ def _scaling_title(mode: str) -> str:
 
 
 def main() -> None:
+    """Benchmark one enhancement mode across many square image sizes.
+
+    This script is the main source of the checked-in scaling evidence used in
+    the README. It:
+
+    - resizes source photos into square benchmark inputs
+    - reuses one compiled simulator binary for all runs in the sweep
+    - records per-run statistics
+    - aggregates by image size across source images
+    - writes JSON, Markdown, and plot artifacts
+    """
     parser = argparse.ArgumentParser(description="Benchmark brightness kernel across many image sizes.")
     parser.add_argument("--sizes", nargs="+", type=int, default=[32, 64, 96, 128, 160, 192])
     parser.add_argument("--source-dir", type=Path, default=ROOT / "inputs")

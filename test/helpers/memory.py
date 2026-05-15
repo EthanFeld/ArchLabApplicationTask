@@ -2,6 +2,19 @@ from typing import List
 from .logger import logger
 
 class Memory:
+    """Simple Python memory model used by cocotb tests.
+
+    The DUT exposes packed multi-channel memory request signals. This helper
+    decodes those packed buses into per-channel transactions, services them
+    immediately from a Python list, and writes packed response buses back to
+    the DUT.
+
+    It is intentionally simple:
+
+    - no latency model
+    - one response generated in the same testbench step
+    - transaction counters mainly for assertions and profiling
+    """
     def __init__(self, dut, addr_bits, data_bits, channels, name):
         self.dut = dut
         self.addr_bits = addr_bits
@@ -26,6 +39,7 @@ class Memory:
             self.mem_write_ready = getattr(dut, f"{name}_mem_write_ready")
 
     def run(self):
+        """Advance one memory-model step and service all visible requests."""
         mem_read_valid = [
             int(str(self.mem_read_valid.value)[i:i+1], 2)
             for i in range(0, len(str(self.mem_read_valid.value)), 1)
@@ -79,14 +93,17 @@ class Memory:
             self.mem_write_ready.value = int(''.join(format(w, '01b') for w in mem_write_ready), 2)
 
     def write(self, address, data):
+        """Write one word if the address is in bounds."""
         if address < len(self.memory):
             self.memory[address] = data
 
     def load(self, rows: List[int]):
+        """Load a sequence of words into memory starting at address 0."""
         for address, data in enumerate(rows):
             self.write(address, data)
 
     def display(self, rows, decimal=True):
+        """Pretty-print the first part of memory for debugging traces."""
         logger.info("\n")
         logger.info(f"{self.name.upper()} MEMORY")
         

@@ -35,6 +35,12 @@ def _build_name(
     data_mem_channels: int,
     program_mem_channels: int,
 ) -> str:
+    """Build a deterministic simulator-build name from runtime configuration.
+
+    Different architectural parameters produce different generated Verilog and
+    different simulator binaries. Encoding the configuration into the build
+    directory name makes those artifacts easy to distinguish and reuse.
+    """
     return (
         f"{mode}_a{addr_bits}_d{data_bits}_t{thread_count_bits}"
         f"_c{num_cores}_b{threads_per_block}_dm{data_mem_channels}_pm{program_mem_channels}"
@@ -57,6 +63,20 @@ def _run_single_case(
     data_mem_channels: int,
     program_mem_channels: int,
 ) -> dict:
+    """Run one prepared enhancement case through cocotb and return result JSON.
+
+    A "case" is the common host-side description used throughout the repo. It
+    includes:
+
+    - kernel name
+    - initial data-memory contents
+    - expected output semantics
+    - metadata such as output layout or symbols
+
+    This helper writes that case to disk, points the generic cocotb testbench
+    at it through environment variables, runs simulation, and then reads the
+    machine-generated result file back into Python.
+    """
     build_dir = ROOT / "build" / build_name
     build_dir.mkdir(parents=True, exist_ok=True)
 
@@ -102,6 +122,23 @@ def run_case(
     trace: bool = False,
     sim_binary: Path | None = None,
 ) -> dict:
+    """Run one image through one enhancement mode end-to-end.
+
+    High-level flow:
+
+    1. Load the input image and convert it to grayscale.
+    2. Build the host-side case description for the selected mode.
+    3. Build or reuse a simulator binary for the requested GPU parameters.
+    4. Run simulation once or many times depending on the mode.
+    5. Reconstruct the final output pixel stream.
+    6. Write output image plus JSON statistics.
+
+    Exact modes (`brightness`, `brightness-persistent`, `brightness-adaptive-tiles`,
+    `adaptive-gamma-lut`) compare directly against exact host-generated outputs.
+
+    Approximate clique mode is still checked exactly against the host-side
+    approximation model chosen by the current threshold and batching strategy.
+    """
     image = Image.open(input_image).convert("L")
     width, height = image.size
     pixels = list(image.tobytes())
@@ -332,6 +369,7 @@ def run_case(
 
 
 def main() -> None:
+    """CLI entry point for running one enhancement mode on one image."""
     parser = argparse.ArgumentParser(description="Run one tiny-gpu image-enhancement kernel on one grayscale image.")
     parser.add_argument("input_image", type=Path)
     parser.add_argument("output_image", type=Path)

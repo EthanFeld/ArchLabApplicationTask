@@ -167,14 +167,6 @@ With the current baseline `16-bit` address and thread-count configuration, the l
 
 ## Extensions
 
-These are not required for the baseline:
-
-- `brightness-persistent`
-- `brightness-clique-approx`
-- `brightness-adaptive-tiles`
-- `adaptive-gamma-lut`
-
-They are kept for comparison and follow-on experimentation, but they are not necessary to understand or grade the core submission.
 
 ### `brightness-persistent`
 

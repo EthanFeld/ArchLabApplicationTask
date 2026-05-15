@@ -10,6 +10,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _find_binary(env_var: str, which_name: str, *fallbacks: str) -> Path:
+    """Locate a required external tool.
+
+    Resolution order:
+
+    1. explicit environment variable
+    2. normal `PATH` lookup
+    3. known fallback locations checked into or expected on Windows
+    """
     explicit = os.environ.get(env_var)
     if explicit:
         path = Path(explicit)
@@ -29,6 +37,7 @@ def _find_binary(env_var: str, which_name: str, *fallbacks: str) -> Path:
 
 
 def _cocotb_config() -> Path:
+    """Locate `cocotb-config` inside the active Python environment."""
     exe_suffix = ".exe" if os.name == "nt" else ""
     candidate = Path(sys.executable).with_name(f"cocotb-config{exe_suffix}")
     if candidate.exists():
@@ -51,10 +60,22 @@ VVP = _find_binary("VVP_BIN", "vvp", r"C:\iverilog\bin\vvp.exe")
 
 
 def _run_stdout(command: list[str]) -> str:
+    """Run a command and return stripped stdout."""
     return subprocess.check_output(command, text=True).strip()
 
 
 def build_gpu(build_name: str, parameters: dict[str, int] | None = None) -> Path:
+    """Translate SystemVerilog sources and compile one simulator binary.
+
+    Build flow:
+
+    - collect all RTL files in `src/`
+    - run `sv2v` to flatten SystemVerilog into Verilog accepted by Icarus
+    - prepend a consistent timescale directive
+    - compile the top-level `gpu` module with optional parameter overrides
+
+    The returned path points to the generated `sim.vvp` binary.
+    """
     parameters = parameters or {}
     build_dir = ROOT / "build" / build_name
     build_dir.mkdir(parents=True, exist_ok=True)
@@ -89,6 +110,12 @@ def run_cocotb(
     test_module: str,
     extra_env: dict[str, str] | None = None,
 ) -> None:
+    """Launch one cocotb test module against a compiled simulator binary.
+
+    This wrapper sets the cocotb-specific environment variables needed for the
+    local Python environment and lets callers inject extra test-specific
+    variables such as case paths or GPU parameter mirrors.
+    """
     cocotb_config = _cocotb_config()
     lib_dir = _run_stdout([str(cocotb_config), "--lib-dir"])
     lib_name = _run_stdout([str(cocotb_config), "--lib-name", "vpi", "icarus"])

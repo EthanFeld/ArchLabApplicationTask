@@ -10,6 +10,7 @@ if str(ROOT) not in sys.path:
 
 
 def _parse_parameters(raw_parameters: list[str]) -> dict[str, int]:
+    """Parse repeated `--parameter NAME=value` CLI arguments."""
     parsed: dict[str, int] = {}
     for item in raw_parameters:
         key, value = item.split("=", 1)
@@ -18,6 +19,7 @@ def _parse_parameters(raw_parameters: list[str]) -> dict[str, int]:
 
 
 def _parse_env(raw_items: list[str]) -> dict[str, str]:
+    """Parse repeated `--env NAME=value` CLI arguments."""
     parsed: dict[str, str] = {}
     for item in raw_items:
         key, value = item.split("=", 1)
@@ -26,6 +28,12 @@ def _parse_env(raw_items: list[str]) -> dict[str, str]:
 
 
 def main() -> None:
+    """CLI entry point for building the GPU and running one cocotb module.
+
+    This wrapper exists so repository commands can stay short and consistent.
+    It also mirrors selected compile-time parameters into environment variables
+    that the Python testbench uses to size helper memory models correctly.
+    """
     from tools.sim import build_gpu, run_cocotb
 
     parser = argparse.ArgumentParser(description="Build tiny-gpu and run one cocotb test module.")

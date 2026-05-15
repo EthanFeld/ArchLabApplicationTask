@@ -16,14 +16,17 @@ from tools.plots import write_benchmark_plot
 
 
 def _mode_tag(mode: str) -> str:
+    """Convert CLI mode name into a filesystem-friendly tag."""
     return mode.replace("-", "_")
 
 
 def _benchmark_stem(mode: str) -> str:
+    """Choose output filename stem for benchmark artifacts."""
     return "brightness_benchmark" if mode == "brightness" else f"{_mode_tag(mode)}_benchmark"
 
 
 def _benchmark_title(mode: str) -> str:
+    """Choose human-readable plot title for a benchmark run."""
     titles = {
         "brightness": "Brightness Benchmark",
         "brightness-persistent": "Persistent Brightness Benchmark",
@@ -35,6 +38,12 @@ def _benchmark_title(mode: str) -> str:
 
 
 def main() -> None:
+    """Benchmark one enhancement mode across a specific list of input images.
+
+    Unlike the scaling script, this benchmark keeps the input set explicit.
+    That makes it useful for ad hoc comparisons across curated photos without
+    first generating synthetic size variants.
+    """
     parser = argparse.ArgumentParser(description="Benchmark one tiny-gpu image-enhancement mode on multiple input images.")
     parser.add_argument("--inputs", nargs="+", type=Path, required=True)
     parser.add_argument("--results-dir", type=Path, default=ROOT / "results")

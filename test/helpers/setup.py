@@ -12,6 +12,16 @@ async def setup(
     data: List[int],
     threads: int
 ):
+    """Perform common cocotb DUT setup for tiny-gpu tests.
+
+    Steps:
+
+    - start the clock
+    - reset the DUT
+    - preload program and data memories
+    - write the requested thread count into the device control register
+    - assert `start` so dispatch begins issuing blocks
+    """
     # Setup Clock
     clock = Clock(dut.clk, 10, unit="ns")
     cocotb.start_soon(clock.start())

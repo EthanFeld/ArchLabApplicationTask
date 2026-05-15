@@ -15,11 +15,17 @@ SOURCE_FILENAMES = {
 
 
 def build_square_variant(source_path: Path, size: int) -> Image.Image:
+    """Create one square benchmark image from a source photo.
+
+    The image is center-cropped and resized using high-quality Lanczos
+    resampling so every benchmark size uses a consistent square framing.
+    """
     image = Image.open(source_path).convert("RGB")
     return ImageOps.fit(image, (size, size), method=Image.Resampling.LANCZOS)
 
 
 def generate_variants(source_dir: Path, output_dir: Path, sizes: list[int]) -> None:
+    """Generate all requested square benchmark variants for each source image."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for stem, filename in SOURCE_FILENAMES.items():
@@ -33,6 +39,7 @@ def generate_variants(source_dir: Path, output_dir: Path, sizes: list[int]) -> N
 
 
 def main() -> None:
+    """CLI entry point for generating benchmark input images."""
     parser = argparse.ArgumentParser(description="Generate square benchmark images from source photos.")
     parser.add_argument("--source-dir", type=Path, default=INPUTS)
     parser.add_argument("--output-dir", type=Path, default=INPUTS)

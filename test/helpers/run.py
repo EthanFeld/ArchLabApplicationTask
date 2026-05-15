@@ -8,6 +8,11 @@ async def run_until_done(
     program_memory,
     max_cycles: int = 512,
 ) -> int:
+    """Drive memory models until the DUT asserts `done` or times out.
+
+    This is the common polling loop for small directed cocotb tests. The bound
+    prevents silent hangs from looking like long-running simulations.
+    """
     cycles = 0
     while int(str(dut.done.value), 2) != 1:
         if cycles >= max_cycles:

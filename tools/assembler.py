@@ -19,10 +19,19 @@ ARITHMETIC_OPCODES = {
 
 
 def _strip_comment(line: str) -> str:
+    """Remove trailing assembly comments and surrounding whitespace."""
     return line.split(";", 1)[0].strip()
 
 
 def _split_label(line: str) -> tuple[list[str], str]:
+    """Extract one or more leading labels from a line.
+
+    The assembler allows compact forms such as `LOOP: ADD R1, R1, R2`.
+    This helper returns:
+
+    - all labels attached to the current program counter
+    - the remaining instruction body, if any
+    """
     labels: list[str] = []
     remainder = line
 
@@ -40,6 +49,7 @@ def _split_label(line: str) -> tuple[list[str], str]:
 
 
 def _parse_register(token: str) -> int:
+    """Convert an architectural register token into its numeric encoding."""
     key = token.strip().upper()
     if key not in REGISTER_IDS:
         raise ValueError(f"Unknown register token: {token}")
@@ -47,6 +57,11 @@ def _parse_register(token: str) -> int:
 
 
 def _parse_immediate(token: str, labels: dict[str, int], symbols: dict[str, int]) -> int:
+    """Resolve an immediate operand from literal, label, or host-provided symbol.
+
+    Immediate values are limited to the 8-bit field available in the tiny-gpu
+    instruction encoding.
+    """
     value_token = token.strip()
     if value_token.startswith("#"):
         value_token = value_token[1:]
@@ -64,6 +79,7 @@ def _parse_immediate(token: str, labels: dict[str, int], symbols: dict[str, int]
 
 
 def _instruction_body(lines: list[str]) -> tuple[dict[str, int], list[str]]:
+    """Perform first-pass parsing to build label table and instruction stream."""
     labels: dict[str, int] = {}
     instructions: list[str] = []
     pc = 0
@@ -87,6 +103,7 @@ def _instruction_body(lines: list[str]) -> tuple[dict[str, int], list[str]]:
 
 
 def _encode_instruction(line: str, labels: dict[str, int], symbols: dict[str, int]) -> int:
+    """Encode one assembly instruction into a 16-bit tiny-gpu machine word."""
     parts = line.split(None, 1)
     mnemonic = parts[0].upper()
     operands = []
@@ -140,10 +157,12 @@ def _encode_instruction(line: str, labels: dict[str, int], symbols: dict[str, in
 
 
 def assemble_text(source: str, symbols: dict[str, int] | None = None) -> list[int]:
+    """Assemble an in-memory assembly program into machine-code words."""
     symbol_table = symbols or {}
     labels, instructions = _instruction_body(source.splitlines())
     return [_encode_instruction(line, labels, symbol_table) for line in instructions]
 
 
 def assemble_file(path: str | Path, symbols: dict[str, int] | None = None) -> list[int]:
+    """Read and assemble one assembly source file."""
     return assemble_text(Path(path).read_text(encoding="utf-8"), symbols=symbols)

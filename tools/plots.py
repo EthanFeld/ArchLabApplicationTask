@@ -22,6 +22,7 @@ PALETTE = {
 
 
 def _apply_style() -> None:
+    """Apply a shared visual style to benchmark plots."""
     plt.rcParams.update(
         {
             "figure.facecolor": "white",
@@ -48,6 +49,7 @@ def _apply_style() -> None:
 
 
 def _int_compact(value: float, _: int) -> str:
+    """Format large integers using compact `k`/`M` suffixes."""
     if value >= 1_000_000:
         return f"{value / 1_000_000:.1f}M"
     if value >= 1_000:
@@ -56,10 +58,18 @@ def _int_compact(value: float, _: int) -> str:
 
 
 def _seconds_formatter(value: float, _: int) -> str:
+    """Format seconds compactly for axis labels."""
     return f"{value:.0f}s" if value >= 10 else f"{value:.1f}s"
 
 
 def write_benchmark_plot(summary_rows: list[dict], output_path: Path, title: str) -> None:
+    """Write a two-panel benchmark plot for explicitly chosen input images.
+
+    Panels:
+
+    - average simulator cycles
+    - average wall-clock runtime
+    """
     _apply_style()
 
     sizes = [row["image_size"] for row in summary_rows]
@@ -88,6 +98,14 @@ def write_benchmark_plot(summary_rows: list[dict], output_path: Path, title: str
 
 
 def write_scaling_plot(summary_rows: list[dict], output_path: Path, title: str) -> None:
+    """Write a three-panel scaling plot for size-sweep experiments.
+
+    Panels:
+
+    - total cycles vs pixel count
+    - wall time vs pixel count
+    - cycles per pixel vs image size
+    """
     _apply_style()
 
     pixels = [row["pixels"] for row in summary_rows]
